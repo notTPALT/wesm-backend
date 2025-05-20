@@ -1,0 +1,60 @@
+/* Custom scrollbar for sidebar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #60A5FA;
+  /* Blue-400 for a brighter thumb */
+  border-radius: 3px;
+}
+
+/* Active style for sidebar links */
+.sidebar-link.active {
+  background-color: #3B82F6;
+  /* Blue-500 for active background */
+  border-left: 4px solid #93C5FD;
+  /* Blue-300 for active border */
+  color: white;
+  font-weight: 500;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+/* Active style for floor tabs */
+.floor-tab.active {
+  background-color: white;
+  border-bottom: 2px solid #3B82F6;
+  /* Blue-500 for active border */
+}
+
+/* Hover style for floor tabs */
+.floor-tab:hover {
+  background-color: #EFF6FF;
+  /* Blue-50 for hover */
+}
+
+/* Ripple effect */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  animation: ripple-animation 0.6s linear;
+  transform: scale(0);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Ensure parent has position: relative for ripple */
+.sidebar-link,
+.floor-tab {
+  position: relative;
+  overflow: hidden;
+}
