@@ -37,12 +37,12 @@ async function getUsageLast30Days(type) {
   } catch (error) {
     console.error("Error while getting total usage: ", error);
   }
-  
+
   return results;
 }
 
 router.get("/", async (req, res) => {
-  var { type, node_id, sensor_id, date, rows } = req.query;
+  var { type, node_id, sensor_id, date } = req.query;
 
   var model;
 
@@ -60,30 +60,22 @@ router.get("/", async (req, res) => {
     return;
   }
 
-  if (rows === undefined) {
-    rows = 1;
-  }
-
   var results;
   try {
-    if (date === undefined) {
-      results = await model
-        .find({ sensor_id: sensor_id, node_id: node_id })
-        .sort({ _id: -1 })
-        .limit(rows)
-        .exec();
-    } else {
-      let requestDate = new Date();
+    let requestDate = new Date();
+    if (date !== undefined) {
+      console.log(requestDate);
       requestDate.setDate(date);
+      console.log(requestDate);
       requestDate = requestDate.toISOString().slice(0, 10);
+      console.log(requestDate);
 
       results = await model
         .find({
           sensor_id: sensor_id,
           node_id: node_id,
-          timestamp: { $gte: requestDate },
+          timestamp: { $gte: requestDate, $lte: requestDate },
         })
-        .limit(rows)
         .exec();
     }
   } catch (error) {
