@@ -1,42 +1,90 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 
-var electricModel = require('../config/models/electricModel');
-var waterModel = require('../config/models/waterModel');
+var electricModel = require("../config/models/electricModel");
+var waterModel = require("../config/models/waterModel");
 
+async function getUsageLast30Days(type) {
+  var results = [];
+  var model, nodeId, materialType;
 
-router.get('/', async (req, res) => {
-    var { type, node_id, sensor_id, date, rows } = req.query;
+  if (type == "elec30") {
+    model = electricModel;
+    nodeId = "node_2";
+    materialType = "power";
+  } else if (type == "water30") {
+    model = waterModel;
+    nodeId = "node_1";
+    materialType = "water";
+  }
 
-    var model;
+  try {
+    results = await model
+      .aggregate([
+        { $match: { node_id: nodeId } },
+        { $group: { _id: 1, total_usage: { $sum: `$${materialType}` } } },
+        { $project: { _id: 0, total_usage: 1 } },
+      ])
+      .exec();
+    // console.log(results);
+  } catch (error) {
+    console.error("Error while getting total usage: ", error);
+  }
+  return results;
+}
 
-    if (type == 'elec') {
-        model = electricModel;
-    } else if (type == 'water') {
-        model = waterModel;
-    } else {
-        res.status(404).send("Invalid 'type' value.");
-        return;
-    }
+router.get("/", async (req, res) => {
+  var { type, node_id, sensor_id, date, rows } = req.query;
 
-    if (rows === undefined) {
-        rows = 1;
-    }
+  var model;
 
-    var results;
+  if (type == "elec30" || type == "water30") {
+    res.json(await getUsageLast30Days(type));
+    return;
+  }
+
+  if (type == "elec") {
+    model = electricModel;
+  } else if (type == "water") {
+    model = waterModel;
+  } else {
+    res.status(404).send("Invalid 'type' value.");
+    return;
+  }
+
+  if (rows === undefined) {
+    rows = 1;
+  }
+
+  var results;
+  try {
     if (date === undefined) {
-        results = await model.find({ sensor_id: sensor_id, node_id: node_id }).sort({ _id: -1 }).limit(rows).exec();
+      results = await model
+        .find({ sensor_id: sensor_id, node_id: node_id })
+        .sort({ _id: -1 })
+        .limit(rows)
+        .exec();
     } else {
-        let requestDate = new Date();
-        requestDate.setDate(date);
-        requestDate = requestDate.toISOString().slice(0, 10);
+      let requestDate = new Date();
+      requestDate.setDate(date);
+      requestDate = requestDate.toISOString().slice(0, 10);
 
-        results = await model.find({ sensor_id: sensor_id, node_id: node_id, timestamp: { $gte: requestDate } }).limit(rows).exec();
+      results = await model
+        .find({
+          sensor_id: sensor_id,
+          node_id: node_id,
+          timestamp: { $gte: requestDate },
+        })
+        .limit(rows)
+        .exec();
     }
+  } catch (error) {
+    console.error("Error while retrieving data from database: ", error);
+  }
 
-    console.log(results);
+  console.log(results);
 
-    res.json(results);
+  res.json(results);
 });
 
 module.exports = router;
