@@ -6,23 +6,30 @@ var waterModel = require("../config/models/waterModel");
 
 async function getUsageLast30Days(type) {
   var results = [];
-  var model, nodeId, materialType;
+  var model, nodeId, resourceType;
 
   if (type == "elec30") {
     model = electricModel;
     nodeId = "node_2";
-    materialType = "power";
+    resourceType = "power";
   } else if (type == "water30") {
     model = waterModel;
     nodeId = "node_1";
-    materialType = "water";
+    resourceType = "water";
   }
 
   try {
     results = await model
       .aggregate([
-        { $match: { node_id: nodeId } },
-        { $group: { _id: 1, total_usage: { $sum: `$${materialType}` } } },
+        {
+          $match: {
+            node_id: nodeId,
+            timestamp: {
+              $gte: new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000),
+            },
+          },
+        },
+        { $group: { _id: 1, total_usage: { $sum: `$${resourceType}` } } },
         { $project: { _id: 0, total_usage: 1 } },
       ])
       .exec();
@@ -30,6 +37,7 @@ async function getUsageLast30Days(type) {
   } catch (error) {
     console.error("Error while getting total usage: ", error);
   }
+  
   return results;
 }
 
