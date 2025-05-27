@@ -30,10 +30,9 @@ router.get('/', async (req, res) => {
     } else {
         let requestDate = new Date();
         requestDate.setDate(date);
-        console.log(requestDate);
         requestDate = requestDate.toISOString().slice(0, 10);
 
-        results = await model.find({ sensor_id: sensor_id, node_id: node_id, timestamp: { $gte: requestDate } }).limit(rows);
+        results = await model.find({ sensor_id: sensor_id, node_id: node_id, timestamp: { $gte: requestDate } }).limit(rows).exec();
     }
 
     console.log(results);
