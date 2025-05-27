@@ -4,52 +4,31 @@ var router = express.Router();
 var electricModel = require("../config/models/electricModel");
 var waterModel = require("../config/models/waterModel");
 
-async function getUsageLast30Days(type) {
-  var results = [];
-  var model, nodeId, resourceType;
-
-  if (type == "elec30") {
-    model = electricModel;
-    nodeId = "node_2";
-    resourceType = "power";
-  } else if (type == "water30") {
-    model = waterModel;
-    nodeId = "node_1";
-    resourceType = "water";
-  }
-
+function convertToUTCDate(dateString) {
   try {
-    results = await model
-      .aggregate([
-        {
-          $match: {
-            node_id: nodeId,
-            timestamp: {
-              $gte: new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000),
-            },
-          },
-        },
-        { $group: { _id: 1, total_usage: { $sum: `$${resourceType}` } } },
-        { $project: { _id: 0, total_usage: 1 } },
-      ])
-      .exec();
-    // console.log(results);
-  } catch (error) {
-    console.error("Error while getting total usage: ", error);
-  }
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) {
+      throw new Error("Invalid date format. Use yyyy-mm-dd");
+    }
 
-  return results;
+    const [year, month, day] = dateString.split("-");
+
+    const date = new Date(year, month - 1, day);
+
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date");
+    }
+
+    return date;
+  } catch (error) {
+    console.error("Error converting date:", error.message);
+    throw error;
+  }
 }
 
 router.get("/", async (req, res) => {
-  var { type, node_id, sensor_id, date } = req.query;
-
+  var { type, sensor_id, date = undefined } = req.query;
   var model;
-
-  if (type == "elec30" || type == "water30") {
-    res.json(await getUsageLast30Days(type));
-    return;
-  }
 
   if (type == "elec") {
     model = electricModel;
@@ -60,31 +39,36 @@ router.get("/", async (req, res) => {
     return;
   }
 
-  var results;
   try {
-    let requestDate = new Date();
-    if (date !== undefined) {
-      console.log(requestDate);
-      requestDate.setDate(date);
-      console.log(requestDate);
-      requestDate = requestDate.toISOString().slice(0, 10);
-      console.log(requestDate);
+    var reqDate = new Date();
+    var startDate = new Date();
+    var endDate = new Date();
 
-      results = await model
-        .find({
-          sensor_id: sensor_id,
-          node_id: node_id,
-          timestamp: { $gte: requestDate, $lte: requestDate },
-        })
-        .exec();
+    if (date !== undefined) {
+      reqDate = convertToUTCDate(date);
+      startDate = new Date(reqDate.setHours(0, 0, 0, 0));
+      endDate = new Date(reqDate.setHours(23, 59, 59, 999));
+    } else {
+      startDate = new Date(startDate.setFullYear(1984)); // Literally 1984
+      endDate = new Date(endDate.setFullYear(2077)); // OMG IS THAT A CYBERPUNK REFERENCE???????????
     }
+
+    var result;
+    result = await model
+      .find({
+        sensor_id: sensor_id,
+        timestamp: { $gte: startDate, $lt: endDate },
+      })
+      .sort({ timestamp: -1 })  
+      .limit(1)
+      .exec();
   } catch (error) {
     console.error("Error while retrieving data from database: ", error);
   }
 
-  console.log(results);
+  console.log(result);
 
-  res.json(results);
+  res.json(result);
 });
 
 module.exports = router;

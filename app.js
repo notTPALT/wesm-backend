@@ -19,6 +19,7 @@ const streamDataRouter = require('./routes/stream_data');
 // const getOldWaterRouter = require('./routes/getOldWater');
 // const getOldElectricRouter = require('./routes/getOldElectric');
 const getDataRouter = require('./routes/getData');
+const getDataRangeRouter = require('./routes/getDataRange');
 
 var app = express();
 
@@ -35,9 +36,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/stream_data', streamDataRouter);
-// app.use('/getOldWater', getOldWaterRouter);
-// app.use('/getOldElectric', getOldElectricRouter);
 app.use('/api/get', getDataRouter);
+app.use('/api/get/range', getDataRangeRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 
