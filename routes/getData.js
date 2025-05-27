@@ -5,7 +5,6 @@ var electricModel = require('../config/models/electricModel');
 var waterModel = require('../config/models/waterModel');
 
 
-// Get data 
 router.get('/', async (req, res) => {
     var { type, node_id, sensor_id, date, rows } = req.query;
 
