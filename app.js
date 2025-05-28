@@ -21,6 +21,7 @@ const streamDataRouter = require('./routes/stream_data');
 const getDataRouter = require('./routes/getData');
 const getDataRangeRouter = require('./routes/getDataRange');
 const populateDataRouter = require('./routes/populateElecData');
+const populateWaterRouter = require('./routes/populateWaterData');
 
 var app = express();
 
@@ -40,7 +41,8 @@ app.use('/stream_data', streamDataRouter);
 app.use('/api/get', getDataRouter);
 app.use('/api/get/range', getDataRangeRouter);
 app.use('/static', express.static(path.join(__dirname, 'public')));
-app.use('/populate', populateDataRouter);
+app.use('/populate/elec', populateDataRouter);
+app.use('/populate/water', populateWaterRouter);
 
 
 // catch 404 and forward to error handler 
