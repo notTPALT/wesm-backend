@@ -13,7 +13,7 @@ function convertToUTCDate(dateString) {
 
     const [year, month, day] = dateString.split("-");
 
-    const date = new Date(year, month - 1, day);
+    const date = new Date(Date.UTC(year, month - 1, day));
 
     if (isNaN(date.getTime())) {
       throw new Error("Invalid date");
@@ -29,6 +29,7 @@ function convertToUTCDate(dateString) {
 router.get("/", async (req, res) => {
   var { type, sensor_id, date = undefined } = req.query;
   var model;
+  console.log(date);
 
   if (type == "elec") {
     model = electricModel;
@@ -46,29 +47,30 @@ router.get("/", async (req, res) => {
 
     if (date !== undefined) {
       reqDate = convertToUTCDate(date);
-      startDate = new Date(reqDate.setHours(0, 0, 0, 0));
       endDate = new Date(reqDate.setHours(23, 59, 59, 999));
     } else {
-      startDate = new Date(startDate.setFullYear(1984)); // Literally 1984
       endDate = new Date(endDate.setFullYear(2077)); // OMG IS THAT A CYBERPUNK REFERENCE???????????
     }
 
-    var result;
-    result = await model
+    var result = await model
       .find({
         sensor_id: sensor_id,
-        timestamp: { $gte: startDate, $lt: endDate },
+        timestamp: { $lt: endDate },
       })
       .sort({ timestamp: -1 })  
       .limit(1)
       .exec();
+
+    if (result) {
+      console.log(result);
+      res.json(result);
+    } else {
+      console.error("Unable to reach database");
+    }
+
   } catch (error) {
-    console.error("Error while retrieving data from database: ", error);
+    console.error("Error while retrieving data from database: ", error.message);
   }
-
-  console.log(result);
-
-  res.json(result);
 });
 
 module.exports = router;

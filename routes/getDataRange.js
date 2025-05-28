@@ -13,7 +13,7 @@ function convertToUTCDate(dateString) {
 
     const [year, month, day] = dateString.split("-");
 
-    const date = new Date(year, month - 1, day);
+    const date = new Date(Date.UTC(year, month - 1, day));
 
     if (isNaN(date.getTime())) {
       throw new Error("Invalid date");
@@ -33,7 +33,7 @@ router.get("/", async (req, res) => {
     res.json('start_date or end_date missing.');
     return;
   }
-  
+
   var model;
   if (type == "elec") {
     model = electricModel;
@@ -48,23 +48,27 @@ router.get("/", async (req, res) => {
     let startDate = convertToUTCDate(start_date);
     let endDate = convertToUTCDate(end_date);
 
-    startDate = new Date(startDate.setHours(0,0,0,0));
-    endDate = new Date(endDate.setHours(23,59,59,999));
+    startDate = new Date(startDate.setUTCHours(0,0,0,0));
+    endDate = new Date(endDate.setUTCHours(23,59,59,999));
 
-    results = await model
+    let results = await model
       .find({
         sensor_id: sensor_id,
         timestamp: { $gte: startDate, $lte: endDate },
       })
-      .sort({ timestamp: -1 })
       .exec();
+    
+    if (results) {
+      for (let i = 0; i < results.length; i++) {
+        console.log(`${results[i].timestamp.toISOString()}: ${results[i].power ?? results[i].water}`);
+      }
+      res.json(results);
+    } else {
+      console.error('Unable to get data from database.');
+    }
   } catch (error) {
     console.error("Error while retrieving data from database: ", error);
   }
-
-  console.log(results);
-
-  res.json(results);
 });
 
 module.exports = router;
