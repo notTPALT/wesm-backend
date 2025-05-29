@@ -57,7 +57,7 @@ router.get("/", async (req, res) => {
         sensor_id: sensor_id,
         timestamp: { $lt: endDate },
       })
-      .sort({ timestamp: -1 })  
+      .sort({ timestamp: -1 })
       .limit(1)
       .exec();
 
@@ -67,7 +67,6 @@ router.get("/", async (req, res) => {
     } else {
       console.error("Unable to reach database");
     }
-
   } catch (error) {
     console.error("Error while retrieving data from database: ", error.message);
   }

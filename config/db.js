@@ -1,10 +1,8 @@
 var mongoose = require('mongoose');
 
-
-
 function connectDB() {
     try {
-        mongoose.connect(MONGODB_URI);
+        mongoose.connect(process.env.MONGODB_URI);
     } catch (err) {
         console.error(err.message);
         process.exit(1);

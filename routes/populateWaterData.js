@@ -5,9 +5,8 @@ const waterModel = require("../config/models/waterModel");
 async function populateData(sensorId) {
   try {
     // Generate 60 random power values between 1 and 1000, sorted in ascending order
-    const waterValues = Array.from(
-      { length: 60 },
-      () => (Math.random() * 999 + 1).toFixed(2)
+    const waterValues = Array.from({ length: 60 }, () =>
+      (Math.random() * 999 + 1).toFixed(2)
     ).sort((a, b) => a - b);
 
     today = new Date();
@@ -41,15 +40,15 @@ async function populateData(sensorId) {
 }
 
 router.get("/", async (req, res) => {
-  var { sensor_id = undefined } = req.query; 
+  var { sensor_id = undefined } = req.query;
   try {
     if (sensor_id) {
-        populateData(sensor_id);
+      populateData(sensor_id);
     } else {
-        console.error('invalid or missing sensor_id.');
+      console.error("invalid or missing sensor_id.");
     }
   } catch (err) {
-    res.json('Unable to populate ', sensor_id);
+    res.json("Unable to populate ", sensor_id);
   }
   res.json("Data populated successfully.");
 });
