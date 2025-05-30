@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     }
 
     try {  
-        const model = getModel(node_id);
+        const model = getModel(data["node_id"]);
         if (model === null) {
             res.status(500).send("Wrong 'node_id'.");
             return;
@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
         }
         
         await saveModel.save();
-        console.log(`📥 Dữ liệu từ ${sensor_id}:`, data);
+        console.log(`📥 Dữ liệu từ ${data["sensor_id"]}:`, data);
         res.status(200).send('Đã lưu thành công');
     } catch (err) {
         console.error('❌ Lỗi ghi dữ liệu:', err);
