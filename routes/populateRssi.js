@@ -5,18 +5,18 @@ const rssiModel = require("../config/models/rssiModel");
 async function populateRssi(nodeId) {
   try {
     const rssiValues = Array.from({ length: 200 }, () =>
-      (Math.floor(Math.random() * 200 - 100).toFixed(0))
+      Math.floor(Math.random() * 100 - 120)
     );
 
     let today = new Date();
     let interval = 15;
     
     var startDate = new Date();
-    startDate.setDate(today.getMinutes() - (interval * 199));
+    startDate.setMinutes(today.getMinutes() - (interval * 199));
 
     // Create documents array
     const documents = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 200; i++) {
       let date = new Date(startDate);
       date.setUTCDate(startDate.getUTCDate() + (i * interval));
 

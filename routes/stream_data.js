@@ -3,10 +3,12 @@ var router = express.Router();
 
 var waterModel = require('../config/models/waterModel');
 var electricModel = require('../config/models/electricModel');
+const rssiModel = require('../config/models/rssiModel');
 
-function getModel(nodeID) {
+function getModel(nodeID, rssi) {
     if (nodeID == "node_1") return waterModel;
     if (nodeID == "node_2") return electricModel;
+    if (rssi) return rssiModel;
     return null;
 }
 
@@ -20,9 +22,9 @@ router.post('/', async (req, res) => {
     }
 
     try {  
-        const model = getModel(data["node_id"]);
+        const model = getModel(data["node_id"], data["rssi"]);
         if (model === null) {
-            res.status(500).send("Wrong 'node_id'.");
+            res.status(500).send("Can't get a suitable model.");
             return;
         }
 
