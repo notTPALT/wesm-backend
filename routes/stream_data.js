@@ -6,9 +6,9 @@ var electricModel = require('../config/models/electricModel');
 const rssiModel = require('../config/models/rssiModel');
 
 function getModel(nodeID, rssi) {
+    if (rssi) return rssiModel;
     if (nodeID == "node_1") return waterModel;
     if (nodeID == "node_2") return electricModel;
-    if (rssi) return rssiModel;
     return null;
 }
 
